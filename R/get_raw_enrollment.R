@@ -2,36 +2,117 @@
 # Raw Enrollment Data Download Functions
 # ==============================================================================
 #
-# This file contains functions for downloading raw enrollment data from GOSA
-# (Governor's Office of Student Achievement).
+# This file contains functions for downloading raw enrollment data for Georgia
+# schools from the Governor's Office of Student Achievement (GOSA).
 #
-# Data comes from GOSA's downloadable data repository:
-# - Enrollment by Subgroup: Demographics, special populations (2011-present)
-# - Enrollment by Grade: Grade-level enrollment (2011-present)
+# Data source:
+# - GOSA (Governor's Office of Student Achievement) (2011-present):
+#   https://gosa.georgia.gov/dashboards-data-report-card/downloadable-data
+#   https://download.gosa.ga.gov/
 #
-# GOSA data is available from 2010-11 onward. For earlier years, data must be
-# requested directly from GOSA.
+# Data availability:
+# - 2011-2024: Full demographics with GOSA format (enrollment by subgroup and grade)
 #
-# URL Pattern: https://download.gosa.ga.gov/{YEAR}/Enrollment_by_Subgroup_Metrics_{YYYY-YY}_{timestamp}.csv
+# URL Pattern:
+# - GOSA: https://download.gosa.ga.gov/{YEAR}/Enrollment_by_Subgroup_Metrics_{YYYY-YY}[_timestamp].csv
+#
+# Note: GOSA files may include timestamps in their filenames. The package attempts
+# to discover the correct URL or uses known working URLs.
+#
+# For historical data prior to 2011, users must submit a data request to GOSA:
+# https://gosa.georgia.gov/dashboards-data-report-card/data-requests
 #
 # ==============================================================================
 
-#' Download raw enrollment data from GOSA
+#' Download raw enrollment data for Georgia
+#'
+#' Downloads enrollment data from the Governor's Office of Student Achievement
+#' (GOSA) downloadable data repository.
+#'
+#' @param end_year School year end (2023-24 = 2024). Valid range: 2011-2024
+#' @return List with enrollment data frame(s)
+#' @keywords internal
+get_raw_enr <- function(end_year) {
+
+  validate_year(end_year)
+
+  message(paste("Downloading Georgia enrollment data for", end_year, "..."))
+  message("  Using GOSA downloadable data...")
+
+  raw_data <- download_gosa_data(end_year)
+
+  raw_data
+}
+
+
+#' Validate year parameter
+#'
+#' Checks that the year is within the valid range for available data.
+#' GOSA provides data from 2010-11 through 2023-24 school years.
+#'
+#' @param end_year School year end
+#' @return NULL (throws error if invalid)
+#' @keywords internal
+validate_year <- function(end_year) {
+  min_year <- 2011
+  max_year <- 2024
+
+  if (!is.numeric(end_year) || length(end_year) != 1) {
+    stop("end_year must be a single numeric value")
+  }
+
+  if (end_year < min_year || end_year > max_year) {
+    stop(paste0(
+      "end_year must be between ", min_year, " and ", max_year, ".\n",
+      "  - GOSA provides enrollment data from 2010-11 through 2023-24.\n",
+      "  - For historical data prior to 2011, submit a GOSA data request:\n",
+      "    https://gosa.georgia.gov/dashboards-data-report-card/data-requests"
+    ))
+  }
+}
+
+
+#' Get format era for a given year
+#'
+#' Returns the data format era for processing. All data comes from GOSA.
+#'
+#' @param end_year School year end
+#' @return Character string indicating era (always "gosa" for supported years)
+#' @keywords internal
+get_format_era <- function(end_year) {
+  # All supported years (2011-2024) use GOSA data format
+  return("gosa")
+}
+
+
+#' Get available years for Georgia enrollment data
+#'
+#' Returns the range of years available from GOSA (Governor's Office of
+#' Student Achievement). GOSA provides enrollment data from the 2010-11
+#' school year (end_year = 2011) through 2023-24 (end_year = 2024).
+#'
+#' @return Integer vector of available years (2011-2024)
+#' @export
+#' @examples
+#' get_available_years()
+get_available_years <- function() {
+  2011:2024
+}
+
+
+# ==============================================================================
+# GOSA Download Functions (2011-present)
+# ==============================================================================
+
+#' Download GOSA enrollment data
 #'
 #' Downloads enrollment data from GOSA's downloadable data repository.
 #' Uses Enrollment by Subgroup Metrics for demographics and special populations.
 #'
-#' @param end_year School year end (2023-24 = 2024). Valid range: 2011-2024
+#' @param end_year School year end (2023-24 = 2024)
 #' @return List with enrollment data frame
 #' @keywords internal
-get_raw_enr <- function(end_year) {
-
-  # Validate year - GOSA data available from 2011 onward
-  if (end_year < 2011 || end_year > 2024) {
-    stop("end_year must be between 2011 and 2024. GOSA downloadable data is only available from 2010-11 onward.")
-  }
-
-  message(paste("Downloading GOSA enrollment data for", end_year, "..."))
+download_gosa_data <- function(end_year) {
 
   # Download subgroup data (demographics, special populations)
   message("  Downloading enrollment by subgroup data...")
@@ -43,7 +124,6 @@ get_raw_enr <- function(end_year) {
 
   # Merge subgroup and grade data
   if (!is.null(grade_data) && nrow(grade_data) > 0) {
-    # Merge by school identifiers
     merged_data <- merge_gosa_data(subgroup_data, grade_data)
   } else {
     merged_data <- subgroup_data
@@ -68,32 +148,16 @@ get_raw_enr <- function(end_year) {
 #' @keywords internal
 download_gosa_subgroup <- function(end_year) {
 
-  # Build the school year string (e.g., "2023-24" for end_year 2024)
   school_year <- paste0(end_year - 1, "-", substr(end_year, 3, 4))
 
-  # GOSA uses calendar year folders
-  # For 2023-24 data, look in /2024/ folder
-  folder_year <- end_year
-
-  # Try to find the file - GOSA uses timestamps in filenames
-  # We'll try the direct download approach first
-  base_url <- paste0("https://download.gosa.ga.gov/", folder_year, "/")
-
-  # Create temp file
-  temp_file <- tempfile(fileext = ".csv")
-
-  # Try known filename patterns
-  # Pattern: Enrollment_by_Subgroup_Metrics_{YYYY-YY}_{timestamp}.csv
-  # We need to discover the exact filename
-
-  # First, try to get the file listing or use a known pattern
- url <- find_gosa_subgroup_url(end_year)
+  url <- find_gosa_subgroup_url(end_year)
 
   if (is.null(url)) {
     stop(paste("Could not find Enrollment by Subgroup data for year", end_year))
   }
 
-  # Download the file
+  temp_file <- tempfile(fileext = ".csv")
+
   tryCatch({
     response <- httr::GET(
       url,
@@ -111,21 +175,18 @@ download_gosa_subgroup <- function(end_year) {
                "\nError:", e$message))
   })
 
-  # Read the CSV
   df <- readr::read_csv(
     temp_file,
     col_types = readr::cols(.default = readr::col_character()),
     show_col_types = FALSE
   )
 
-  # Clean up
   unlink(temp_file)
 
-  # Filter to the correct school year (data files sometimes contain multiple years)
+  # Filter to the correct school year
   if ("SCHOOL_YEAR" %in% names(df)) {
     df <- df[df$SCHOOL_YEAR == school_year, ]
   } else if ("LONG_SCHOOL_YEAR" %in% names(df)) {
-    # Handle different column name variations
     df <- df[grepl(as.character(end_year), df$LONG_SCHOOL_YEAR), ]
   }
 
@@ -146,19 +207,13 @@ find_gosa_subgroup_url <- function(end_year) {
   school_year <- paste0(end_year - 1, "-", substr(end_year, 3, 4))
   folder_year <- end_year
 
-  # Known URLs based on research (these are examples - actual filenames have timestamps)
-  # We'll try a few approaches:
-
-  # Approach 1: Try the GOSA index to get current files
-  # The downloadable data page links to current versions
-
-  # Approach 2: Try common filename patterns
   base_url <- paste0("https://download.gosa.ga.gov/", folder_year, "/")
 
-  # Try without timestamp (sometimes works for latest version)
+  # Try common filename patterns (without timestamp)
   patterns <- c(
     paste0("Enrollment_by_Subgroup_Metrics_", school_year, ".csv"),
-    paste0("Enrollment_by_Subgroup_", school_year, ".csv")
+    paste0("Enrollment_by_Subgroup_", school_year, ".csv"),
+    paste0("Enrollment_by_Subgroups_Programs_", folder_year, ".csv")
   )
 
   for (pattern in patterns) {
@@ -169,9 +224,9 @@ find_gosa_subgroup_url <- function(end_year) {
     }
   }
 
-  # Approach 3: For recent years, try known good URLs
-  # Based on research, construct likely URLs
+  # Try known URLs with timestamps (discovered from GOSA repository)
   known_urls <- list(
+    "2025" = "https://download.gosa.ga.gov/2025/Enrollment_by_Subgroup_Metrics_2024-25.csv",
     "2024" = "https://download.gosa.ga.gov/2024/Enrollment_by_Subgroup_Metrics_2023-24.csv",
     "2023" = "https://download.gosa.ga.gov/2023/Enrollment_by_Subgroup_Metrics_2022-23.csv",
     "2022" = "https://download.gosa.ga.gov/2022/Enrollment_by_Subgroup_Metrics_2021-22.csv",
@@ -195,18 +250,25 @@ find_gosa_subgroup_url <- function(end_year) {
     if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
       return(test_url)
     }
+
+    # Try with timestamp pattern (files often have timestamps appended)
+    # Pattern: Enrollment_by_Subgroup_Metrics_YYYY-YY_YYYY-MM-DD_HH_MM_SS.csv
+    # Try to discover via directory listing or alternative URLs
   }
 
-  # Approach 4: Try alternate URL structure using GOSA's document download
-  # Some files are served via the main GOSA site
-  alt_url <- paste0(
-    "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/document/",
-    "Enrollment_by_Subgroup_Metrics_", school_year, ".csv"
+  # Try alternate URL structures
+  alt_patterns <- c(
+    paste0("https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/document/",
+           "Enrollment_by_Subgroup_Metrics_", school_year, ".csv"),
+    paste0("https://download.gosa.ga.gov/", folder_year, "/",
+           "Enrollment_by_Subgroups_Programs_", folder_year, "_OCT_22_2020.csv")
   )
 
-  response <- try(httr::HEAD(alt_url, httr::timeout(10)), silent = TRUE)
-  if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
-    return(alt_url)
+  for (alt_url in alt_patterns) {
+    response <- try(httr::HEAD(alt_url, httr::timeout(10)), silent = TRUE)
+    if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
+      return(alt_url)
+    }
   }
 
   NULL
@@ -224,9 +286,7 @@ find_gosa_subgroup_url <- function(end_year) {
 download_gosa_grade <- function(end_year) {
 
   school_year <- paste0(end_year - 1, "-", substr(end_year, 3, 4))
-  folder_year <- end_year
 
-  # Try to find the grade-level file
   url <- find_gosa_grade_url(end_year)
 
   if (is.null(url)) {
@@ -254,7 +314,6 @@ download_gosa_grade <- function(end_year) {
     return(NULL)
   })
 
-  # Read the CSV
   df <- readr::read_csv(
     temp_file,
     col_types = readr::cols(.default = readr::col_character()),
@@ -263,7 +322,6 @@ download_gosa_grade <- function(end_year) {
 
   unlink(temp_file)
 
-  # Filter to correct school year
   if ("SCHOOL_YEAR" %in% names(df)) {
     df <- df[df$SCHOOL_YEAR == school_year, ]
   }
@@ -284,7 +342,6 @@ find_gosa_grade_url <- function(end_year) {
 
   base_url <- paste0("https://download.gosa.ga.gov/", folder_year, "/")
 
-  # Try common patterns
   patterns <- c(
     paste0("Enrollment_by_Grade_", school_year, ".csv"),
     paste0("Enrollment_Grade_", school_year, ".csv")
@@ -312,24 +369,19 @@ find_gosa_grade_url <- function(end_year) {
 #' @keywords internal
 merge_gosa_data <- function(subgroup_df, grade_df) {
 
-  # Identify common ID columns
-  # GOSA uses SCHOOL_DSTRCT_CD + INSTN_NUMBER as the school identifier
   id_cols <- c("SCHOOL_DSTRCT_CD", "INSTN_NUMBER", "SCHOOL_YEAR")
   id_cols <- id_cols[id_cols %in% names(subgroup_df) & id_cols %in% names(grade_df)]
 
   if (length(id_cols) == 0) {
-    # Can't merge, return subgroup data only
     return(subgroup_df)
   }
 
-  # Select grade columns from grade_df
   grade_cols <- grep("^GRADE_|^GR_|_GRADE$", names(grade_df), value = TRUE)
 
   if (length(grade_cols) == 0) {
     return(subgroup_df)
   }
 
-  # Merge
   grade_subset <- grade_df[, c(id_cols, grade_cols), drop = FALSE]
   merged <- dplyr::left_join(subgroup_df, grade_subset, by = id_cols)
 
@@ -337,12 +389,3 @@ merge_gosa_data <- function(subgroup_df, grade_df) {
 }
 
 
-#' Get available years for GOSA data
-#'
-#' Returns the range of years available from GOSA downloadable data.
-#'
-#' @return Integer vector of available years
-#' @keywords internal
-get_available_years <- function() {
-  2011:2024
-}

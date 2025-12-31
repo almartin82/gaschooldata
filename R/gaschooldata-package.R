@@ -1,14 +1,24 @@
 #' gaschooldata: Fetch and Process Georgia School Data
 #'
-#' Downloads and processes school data from the Georgia Department of Education
-#' (GaDOE) and the Governor's Office of Student Achievement (GOSA). Provides
-#' functions for fetching enrollment data with demographic breakdowns and
-#' transforming it into tidy format for analysis.
+#' Downloads and processes school data from the Governor's Office of Student
+#' Achievement (GOSA). Provides functions for fetching enrollment data with
+#' demographic breakdowns and transforming it into tidy format for analysis.
+#'
+#' @section Data Availability:
+#' The package supports enrollment data from 2011 through 2024:
+#' \itemize{
+#'   \item 2011-2024: GOSA (full demographics and special populations)
+#' }
+#'
+#' GOSA provides enrollment data from the 2010-11 school year through 2023-24.
+#' For historical data prior to 2011, users must submit a data request directly
+#' to GOSA: \url{https://gosa.georgia.gov/dashboards-data-report-card/data-requests}
 #'
 #' @section Main functions:
 #' \describe{
 #'   \item{\code{\link{fetch_enr}}}{Fetch enrollment data for a school year}
 #'   \item{\code{\link{fetch_enr_multi}}}{Fetch enrollment data for multiple years}
+#'   \item{\code{\link{get_available_years}}}{Get range of available years (2011-2024)}
 #'   \item{\code{\link{tidy_enr}}}{Transform wide data to tidy (long) format}
 #'   \item{\code{\link{id_enr_aggs}}}{Add aggregation level flags}
 #'   \item{\code{\link{enr_grade_aggs}}}{Create grade-level aggregations}
@@ -29,10 +39,10 @@
 #' }
 #'
 #' @section Data Sources:
-#' Data is sourced from two Georgia agencies:
+#' Data is sourced exclusively from Georgia state sources:
 #' \itemize{
-#'   \item GOSA: \url{https://gosa.georgia.gov/dashboards-data-report-card/downloadable-data}
-#'   \item GaDOE: \url{https://georgiainsights.gadoe.org/data-downloads/}
+#'   \item GOSA Downloadable Data: \url{https://gosa.georgia.gov/dashboards-data-report-card/downloadable-data}
+#'   \item GOSA Data Repository: \url{https://download.gosa.ga.gov/}
 #' }
 #'
 #' @docType package
