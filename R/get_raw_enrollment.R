@@ -91,12 +91,22 @@ get_format_era <- function(end_year) {
 #' Student Achievement). GOSA provides enrollment data from the 2010-11
 #' school year (end_year = 2011) through 2023-24 (end_year = 2024).
 #'
-#' @return Integer vector of available years (2011-2024)
+#' @return A list with components:
+#'   \describe{
+#'     \item{min_year}{Integer. The earliest available year (2011).}
+#'     \item{max_year}{Integer. The most recent available year (2024).}
+#'     \item{description}{Character. A description of the data availability.}
+#'   }
 #' @export
 #' @examples
 #' get_available_years()
+#' # Returns list(min_year = 2011, max_year = 2024, description = "...")
 get_available_years <- function() {
-  2011:2024
+  list(
+    min_year = 2011L,
+    max_year = 2024L,
+    description = "GOSA enrollment data (2010-11 through 2023-24 school years)"
+  )
 }
 
 
