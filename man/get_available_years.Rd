@@ -7,13 +7,19 @@
 get_available_years()
 }
 \value{
-Integer vector of available years (2011-2024)
+A list with components:
+\describe{
+\item{min_year}{Integer. The earliest available year (2011).}
+\item{max_year}{Integer. The most recent available year (2025).}
+\item{description}{Character. A description of the data availability.}
+}
 }
 \description{
 Returns the range of years available from GOSA (Governor's Office of
 Student Achievement). GOSA provides enrollment data from the 2010-11
-school year (end_year = 2011) through 2023-24 (end_year = 2024).
+school year (end_year = 2011) through 2024-25 (end_year = 2025).
 }
 \examples{
 get_available_years()
+# Returns list(min_year = 2011, max_year = 2025, description = "...")
 }
