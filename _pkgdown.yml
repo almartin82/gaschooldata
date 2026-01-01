@@ -15,12 +15,6 @@ reference:
   - fetch_enr_multi
   - get_available_years
 
-- title: Process & Tidy
-  contents:
-  - tidy_enr
-  - id_enr_aggs
-  - enr_grade_aggs
-
 - title: Cache Management
   contents:
   - cache_status
