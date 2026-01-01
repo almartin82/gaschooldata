@@ -5,7 +5,7 @@ Downloads and combines enrollment data for multiple school years.
 ## Usage
 
 ``` r
-fetch_enr_multi(end_years, use_cache = TRUE)
+fetch_enr_multi(end_years, tidy = TRUE, use_cache = TRUE)
 ```
 
 ## Arguments
@@ -13,6 +13,10 @@ fetch_enr_multi(end_years, use_cache = TRUE)
 - end_years:
 
   Vector of school year ends (e.g., c(2022, 2023, 2024))
+
+- tidy:
+
+  If TRUE (default), returns data in tidy format.
 
 - use_cache:
 

@@ -6,7 +6,7 @@ Student Achievement (GOSA).
 ## Usage
 
 ``` r
-fetch_enr(end_year, use_cache = TRUE)
+fetch_enr(end_year, tidy = TRUE, use_cache = TRUE)
 ```
 
 ## Arguments
@@ -14,6 +14,10 @@ fetch_enr(end_year, use_cache = TRUE)
 - end_year:
 
   School year end (2023-24 = 2024). Valid range: 2011-2025.
+
+- tidy:
+
+  If TRUE (default), returns data in tidy format.
 
 - use_cache:
 
