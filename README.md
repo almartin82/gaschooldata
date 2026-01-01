@@ -2,12 +2,13 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/almartin82/gaschooldata/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/almartin82/gaschooldata/actions/workflows/R-CMD-check.yaml)
+[![Python Tests](https://github.com/almartin82/gaschooldata/actions/workflows/python-test.yaml/badge.svg)](https://github.com/almartin82/gaschooldata/actions/workflows/python-test.yaml)
 [![pkgdown](https://github.com/almartin82/gaschooldata/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/almartin82/gaschooldata/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
 **[Documentation](https://almartin82.github.io/gaschooldata/)** | **[Getting Started](https://almartin82.github.io/gaschooldata/articles/quickstart.html)**
 
-Fetch and analyze Georgia public school enrollment data from the Governor's Office of Student Achievement (GOSA).
+Fetch and analyze Georgia school enrollment data from the Governor's Office of Student Achievement (GOSA) in R or Python.
 
 ## What can you find with gaschooldata?
 
@@ -176,6 +177,8 @@ remotes::install_github("almartin82/gaschooldata")
 
 ## Quick start
 
+### R
+
 ```r
 library(gaschooldata)
 library(dplyr)
@@ -201,6 +204,36 @@ enr_2024 %>%
          subgroup %in% c("white", "black", "hispanic", "asian")) %>%
   group_by(district_name, subgroup) %>%
   summarize(n = sum(n_students, na.rm = TRUE))
+```
+
+### Python
+
+```python
+import pygaschooldata as ga
+
+# See available years
+years = ga.get_available_years()
+print(f"Data available from {years['min_year']} to {years['max_year']}")
+
+# Fetch one year
+enr_2024 = ga.fetch_enr(2024)
+
+# Fetch multiple years
+enr_multi = ga.fetch_enr_multi([2020, 2021, 2022, 2023, 2024])
+
+# State totals
+state_total = enr_2024[
+    (enr_2024['is_state'] == True) &
+    (enr_2024['subgroup'] == 'total_enrollment') &
+    (enr_2024['grade_level'] == 'TOTAL')
+]
+
+# District breakdown
+districts = enr_2024[
+    (enr_2024['is_district'] == True) &
+    (enr_2024['subgroup'] == 'total_enrollment') &
+    (enr_2024['grade_level'] == 'TOTAL')
+].sort_values('n_students', ascending=False)
 ```
 
 ## Data availability
