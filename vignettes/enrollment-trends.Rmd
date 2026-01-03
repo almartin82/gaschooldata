@@ -1,8 +1,8 @@
 ---
-title: "Georgia Enrollment Trends"
+title: "Georgia Enrollment Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Georgia Enrollment Trends}
+  %\VignetteIndexEntry{Georgia Enrollment Data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,6 +19,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Getting Started
+
 ```{r load-packages}
 library(gaschooldata)
 library(ggplot2)
@@ -26,235 +28,140 @@ library(dplyr)
 library(scales)
 ```
 
-```{r theme}
-theme_readme <- function() {
-  theme_minimal(base_size = 14) +
-    theme(
-      plot.title = element_text(face = "bold", size = 16),
-      plot.subtitle = element_text(color = "gray40"),
-      panel.grid.minor = element_blank(),
-      legend.position = "bottom"
-    )
-}
+## Data Availability
 
-colors <- c("total" = "#2C3E50", "white" = "#3498DB", "black" = "#E74C3C",
-            "hispanic" = "#F39C12", "asian" = "#9B59B6")
-```
+Check which years are available:
 
-```{r fetch-data, cache = TRUE}
-# Get available years
+```{r years}
 years <- get_available_years()
-if (is.list(years)) {
-  max_year <- years$max_year
-  min_year <- years$min_year
-} else {
-  max_year <- max(years)
-  min_year <- min(years)
-}
-
-# Fetch data
-enr <- fetch_enr_multi((max_year - 9):max_year)
-enr_current <- fetch_enr(max_year)
+print(years)
 ```
 
-## 1. Georgia keeps growing while other states shrink
+## Fetching Enrollment Data
 
-Unlike many states losing students, Georgia added 50,000+ students over the past decade. Metro Atlanta's population boom is real.
+Fetch enrollment data for the most recent year:
 
-```{r enrollment-growth}
-state_trend <- enr %>%
-  filter(is_state, grade_level == "TOTAL", subgroup == "total_enrollment")
+```{r fetch}
+enr <- fetch_enr(years$max_year)
 
-ggplot(state_trend, aes(x = end_year, y = n_students)) +
-  geom_line(linewidth = 1.5, color = colors["total"]) +
-  geom_point(size = 3, color = colors["total"]) +
-  scale_y_continuous(labels = comma, limits = c(0, NA)) +
-  labs(title = "Georgia Public School Enrollment",
-       subtitle = "Growth continues while other states shrink",
-       x = "School Year", y = "Students") +
-  theme_readme()
+# Data structure
+cat("Rows:", nrow(enr), "\n")
+cat("Columns:", ncol(enr), "\n\n")
+
+# Detail levels (State, District, School)
+cat("Detail levels:\n")
+print(table(enr$DETAIL_LVL_DESC))
 ```
 
-## 2. The Hispanic population surge
+## Data Structure
 
-Georgia's Hispanic student population has more than doubled since 2011. One in five Georgia students is now Hispanic.
+The data includes demographic breakdowns for state, district, and school levels:
 
-```{r hispanic-growth}
-hispanic <- enr %>%
-  filter(is_state, grade_level == "TOTAL", subgroup == "hispanic")
+```{r structure}
+# Key columns
+key_cols <- c("DETAIL_LVL_DESC", "SCHOOL_DSTRCT_NM", "INSTN_NAME",
+              "ENROLL_PCT_WHITE", "ENROLL_PCT_BLACK", "ENROLL_PCT_HISPANIC",
+              "ENROLL_PCT_ASIAN", "ENROLL_PCT_MALE", "ENROLL_PCT_FEMALE")
 
-ggplot(hispanic, aes(x = end_year, y = pct * 100)) +
-  geom_line(linewidth = 1.5, color = colors["hispanic"]) +
-  geom_point(size = 3, color = colors["hispanic"]) +
-  labs(title = "Hispanic Student Population in Georgia",
-       subtitle = "From 12% to 20% in just over a decade",
-       x = "School Year", y = "Percent of Students") +
-  theme_readme()
+# View state-level data
+state_data <- enr %>%
+  filter(DETAIL_LVL_DESC == "State") %>%
+  select(all_of(key_cols[key_cols %in% names(enr)]))
+
+knitr::kable(state_data, caption = "State-Level Demographics")
 ```
 
-## 3. COVID hit kindergarten hardest
+## Visualizing Demographics
 
-Georgia lost 15,000 kindergartners between 2020 and 2021. Those students never fully came back.
+```{r demo-plot}
+# Get state demographics
+state <- enr %>%
+  filter(DETAIL_LVL_DESC == "State")
 
-```{r k-covid}
-k_trend <- enr %>%
-  filter(is_state, subgroup == "total_enrollment",
-         grade_level %in% c("K", "01", "06", "12")) %>%
-  mutate(grade_label = case_when(
-    grade_level == "K" ~ "Kindergarten",
-    grade_level == "01" ~ "Grade 1",
-    grade_level == "06" ~ "Grade 6",
-    grade_level == "12" ~ "Grade 12"
+# Extract percentages
+demographics <- data.frame(
+  group = c("White", "Black", "Hispanic", "Asian", "Other"),
+  pct = as.numeric(c(
+    state$ENROLL_PCT_WHITE,
+    state$ENROLL_PCT_BLACK,
+    state$ENROLL_PCT_HISPANIC,
+    state$ENROLL_PCT_ASIAN,
+    100 - sum(as.numeric(c(
+      state$ENROLL_PCT_WHITE,
+      state$ENROLL_PCT_BLACK,
+      state$ENROLL_PCT_HISPANIC,
+      state$ENROLL_PCT_ASIAN
+    )), na.rm = TRUE)
   ))
+)
 
-ggplot(k_trend, aes(x = end_year, y = n_students, color = grade_label)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 2.5) +
-  geom_vline(xintercept = 2021, linetype = "dashed", color = "red", alpha = 0.5) +
-  scale_y_continuous(labels = comma) +
-  labs(title = "COVID Impact on Grade-Level Enrollment",
-       subtitle = "Georgia lost 15,000 kindergartners in 2020-21",
-       x = "School Year", y = "Students", color = "") +
-  theme_readme()
+ggplot(demographics, aes(x = reorder(group, -pct), y = pct, fill = group)) +
+  geom_col() +
+  labs(title = "Georgia Public School Demographics",
+       subtitle = paste("School Year", years$max_year - 1, "-", substr(years$max_year, 3, 4)),
+       x = "", y = "Percent of Students") +
+  theme_minimal() +
+  theme(legend.position = "none")
 ```
 
-## 4. Georgia's demographics transformation
+## Largest Districts
 
-In 2011, white students were 44% of enrollment. Today they're under 35%. Georgia schools reflect the New South.
+```{r districts}
+# Note: The raw data doesn't have total enrollment as a single column
+# For now, we'll just show district names
 
-```{r demographics}
-demo <- enr %>%
-  filter(is_state, grade_level == "TOTAL",
-         subgroup %in% c("white", "black", "hispanic", "asian"))
-
-ggplot(demo, aes(x = end_year, y = pct * 100, color = subgroup)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 2.5) +
-  scale_color_manual(values = colors,
-                     labels = c("Asian", "Black", "Hispanic", "White")) +
-  labs(title = "Georgia Demographics Transformation",
-       subtitle = "White students now under 35% of enrollment",
-       x = "School Year", y = "Percent of Students", color = "") +
-  theme_readme()
-```
-
-## 5. Suburban Atlanta growth
-
-Forsyth, Cherokee, and Henry counties are Georgia's fastest-growing districts. All are suburban Atlanta counties that barely existed on the education map 30 years ago.
-
-```{r suburban-growth}
-suburbs <- enr %>%
-  filter(is_district,
-         grepl("Forsyth|Cherokee|Henry", district_name, ignore.case = TRUE),
-         subgroup == "total_enrollment", grade_level == "TOTAL")
-
-ggplot(suburbs, aes(x = end_year, y = n_students, color = district_name)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 2.5) +
-  scale_y_continuous(labels = comma) +
-  labs(title = "Suburban Atlanta Growth",
-       subtitle = "Forsyth, Cherokee, and Henry counties lead Georgia's growth",
-       x = "School Year", y = "Students", color = "") +
-  theme_readme()
-```
-
-## 6. Gwinnett County is Georgia's school system giant
-
-Gwinnett County Public Schools serves more than 180,000 students, making it the largest district in Georgia and one of the largest in the nation.
-
-```{r largest-districts}
-largest <- enr_current %>%
-  filter(is_district, grade_level == "TOTAL", subgroup == "total_enrollment") %>%
-  arrange(desc(n_students)) %>%
+districts <- enr %>%
+  filter(DETAIL_LVL_DESC == "District") %>%
   head(10) %>%
-  mutate(district_label = reorder(district_name, n_students))
+  select(SCHOOL_DSTRCT_NM, ENROLL_PCT_WHITE, ENROLL_PCT_BLACK, ENROLL_PCT_HISPANIC)
 
-ggplot(largest, aes(x = district_label, y = n_students)) +
-  geom_col(fill = colors["total"]) +
-  coord_flip() +
-  scale_y_continuous(labels = comma) +
-  labs(title = "Georgia's Largest School Districts",
-       subtitle = "Gwinnett, Cobb, Fulton, DeKalb form the metro Atlanta powerhouse",
-       x = "", y = "Students") +
-  theme_readme()
+knitr::kable(districts, caption = "Sample District Demographics")
 ```
 
-## 7. Atlanta Public Schools is shrinking
+## Grade-Level Enrollment
 
-While suburban Atlanta booms, Atlanta Public Schools has lost 20% of its enrollment since 2015. Gentrification is reshaping the city's schools.
+If grade data is available, it will appear as columns like `GRADE_K`, `GRADE_1st`, etc.:
 
-```{r atlanta-decline}
-atlanta <- enr %>%
-  filter(grepl("Atlanta City|Atlanta Public", district_name, ignore.case = TRUE),
-         is_district, grade_level == "TOTAL", subgroup == "total_enrollment")
+```{r grades}
+grade_cols <- grep("^GRADE_", names(enr), value = TRUE)
 
-ggplot(atlanta, aes(x = end_year, y = n_students)) +
-  geom_line(linewidth = 1.5, color = colors["total"]) +
-  geom_point(size = 3, color = colors["total"]) +
-  scale_y_continuous(labels = comma, limits = c(0, NA)) +
-  labs(title = "Atlanta Public Schools is Shrinking",
-       subtitle = "Lost 20% of enrollment while suburbs boom",
-       x = "School Year", y = "Students") +
-  theme_readme()
+if (length(grade_cols) > 0) {
+  cat("Grade-level enrollment columns available:\n")
+  print(grade_cols)
+
+  # State-level grade enrollment
+  state <- enr %>% filter(DETAIL_LVL_DESC == "State")
+  grades <- data.frame(
+    grade = grade_cols,
+    count = sapply(grade_cols, function(g) as.numeric(state[[g]]))
+  )
+  grades$grade <- gsub("GRADE_", "", grades$grade)
+
+  ggplot(grades, aes(x = grade, y = count)) +
+    geom_col(fill = "steelblue") +
+    labs(title = "Enrollment by Grade Level",
+         x = "Grade", y = "Students") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+} else {
+  cat("Grade-level data not available for this year.\n")
+}
 ```
 
-## 8. Rural Georgia is emptying out
+## Multi-Year Analysis
 
-While Gwinnett County gains 2,000 students per year, rural districts like Taliaferro County have fewer than 300 students total.
+Fetch multiple years for trend analysis:
 
-```{r smallest-districts}
-smallest <- enr_current %>%
-  filter(is_district, grade_level == "TOTAL", subgroup == "total_enrollment") %>%
-  arrange(n_students) %>%
-  head(10) %>%
-  mutate(district_label = reorder(district_name, -n_students))
-
-ggplot(smallest, aes(x = district_label, y = n_students)) +
-  geom_col(fill = colors["black"]) +
-  coord_flip() +
-  scale_y_continuous(labels = comma) +
-  labs(title = "Georgia's Smallest School Districts",
-       subtitle = "Some rural districts have fewer than 500 students",
-       x = "", y = "Students") +
-  theme_readme()
+```{r multi-year, eval = FALSE}
+# Fetch last 3 years (this may take a while)
+enr_multi <- fetch_enr_multi((years$max_year - 2):years$max_year)
 ```
 
-## 9. English Learners exceed 100,000
+## Data Source
 
-Georgia's English Learner population has grown by 50% since 2015, driven by immigration to metro Atlanta.
+Data is sourced from the Georgia Governor's Office of Student Achievement (GOSA):
 
-```{r english-learners}
-el <- enr %>%
-  filter(is_state, grade_level == "TOTAL", subgroup == "lep")
+- Website: https://gosa.georgia.gov/
+- Download repository: https://download.gosa.ga.gov/
 
-ggplot(el, aes(x = end_year, y = n_students)) +
-  geom_line(linewidth = 1.5, color = colors["hispanic"]) +
-  geom_point(size = 3, color = colors["hispanic"]) +
-  scale_y_continuous(labels = comma, limits = c(0, NA)) +
-  labs(title = "English Learner Population Growth",
-       subtitle = "Georgia's EL population exceeds 100,000 students",
-       x = "School Year", y = "Students") +
-  theme_readme()
-```
-
-## 10. Charter school growth accelerates
-
-State charter schools and district-authorized charters now serve over 100,000 Georgia students, up from 30,000 a decade ago.
-
-```{r charter-growth}
-charter <- enr_current %>%
-  filter(grepl("Charter", district_name, ignore.case = TRUE),
-         grade_level == "TOTAL", subgroup == "total_enrollment") %>%
-  arrange(desc(n_students)) %>%
-  head(10) %>%
-  mutate(district_label = reorder(district_name, n_students))
-
-ggplot(charter, aes(x = district_label, y = n_students)) +
-  geom_col(fill = colors["asian"]) +
-  coord_flip() +
-  scale_y_continuous(labels = comma) +
-  labs(title = "Georgia's Largest Charter Organizations",
-       subtitle = "Charter schools now serve over 100,000 students",
-       x = "", y = "Students") +
-  theme_readme()
-```
+See the package documentation for more details on data availability and structure.

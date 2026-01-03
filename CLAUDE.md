@@ -71,3 +71,75 @@ devtools::test(filter = "pipeline-live")
 
 See `state-schooldata/CLAUDE.md` for complete testing framework documentation.
 
+---
+
+## Georgia Data Source Documentation
+
+### Primary Data Source: GOSA (Governor's Office of Student Achievement)
+
+**Base URL:** https://download.gosa.ga.gov/
+
+**Available Years:** 2011-2024 (2010-11 through 2023-24 school years)
+
+### File Naming Patterns (IMPORTANT)
+
+GOSA files have **timestamps** appended to their names. The package scrapes directory listings to find the correct URLs.
+
+**Enrollment by Subgroup (Demographics):**
+- 2023+: `Enrollment_by_Subgroup_Metrics_YYYY-YY_TIMESTAMP.csv`
+  - Example: `Enrollment_by_Subgroup_Metrics_2023-24_2025-06-17_15_15_26.csv`
+- 2015-2022: `Enrollment_by_Subgroups_Programs_YYYY_TIMESTAMP.csv`
+  - Example: `Enrollment_by_Subgroups_Programs_2022_Dec072022.csv`
+
+**Enrollment by Grade:**
+- 2023+: `Enrollment_by_Grade_YYYY-YY_TIMESTAMP.csv`
+- Not available for 2015-2022
+
+### Data Structure
+
+**Subgroup file columns:**
+- `LONG_SCHOOL_YEAR` - e.g., "2023-24"
+- `DETAIL_LVL_DESC` - "State", "District", or "School"
+- `SCHOOL_DSTRCT_CD`, `SCHOOL_DSTRCT_NM` - District identifiers
+- `INSTN_NUMBER`, `INSTN_NAME` - School identifiers
+- `ENROLL_PCT_*` - Demographics (Asian, Black, White, Hispanic, etc.)
+- `ENROLL_PCT_MALE`, `ENROLL_PCT_FEMALE` - Gender
+- Various program enrollment counts (EIP, ESOL, Special Ed, etc.)
+
+**Grade file columns:**
+- `GRADE_LEVEL` - K, 1st, 2nd, etc.
+- `ENROLLMENT_COUNT` - Count for that grade
+- `ENROLLMENT_PERIOD` - "Fall" or "Spring"
+
+### Row Counts (Expected for 2024)
+
+| Level | Count |
+|-------|-------|
+| State | 1 |
+| District | ~218 |
+| School | ~2304 |
+| **Total** | **~2523** |
+
+### Known Data Characteristics
+
+1. **"TFS" values**: "Too Few Students" - converted to NA when parsing to numeric
+2. **Grade data only available 2023+**: Older years have only subgroup data
+3. **Multiple timestamps**: GOSA updates files periodically; we use the most recent
+
+### Verified Working URLs (as of 2025-01)
+
+```
+https://download.gosa.ga.gov/2024/Enrollment_by_Subgroup_Metrics_2023-24_*.csv
+https://download.gosa.ga.gov/2024/Enrollment_by_Grade_2023-24_*.csv
+https://download.gosa.ga.gov/2023/Enrollment_by_Subgroup_Metrics_2022-23_*.csv
+https://download.gosa.ga.gov/2022/Enrollment_by_Subgroups_Programs_2022_Dec072022.csv
+```
+
+### When URLs Fail
+
+If URLs start failing:
+1. Check if https://download.gosa.ga.gov/ is accessible
+2. Browse the year directory to find new file patterns
+3. Update `find_gosa_subgroup_url()` patterns if naming changed
+4. File issues may indicate GOSA restructured their data repository
+

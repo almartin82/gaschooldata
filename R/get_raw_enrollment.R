@@ -197,7 +197,7 @@ download_gosa_subgroup <- function(end_year) {
   if ("SCHOOL_YEAR" %in% names(df)) {
     df <- df[df$SCHOOL_YEAR == school_year, ]
   } else if ("LONG_SCHOOL_YEAR" %in% names(df)) {
-    df <- df[grepl(as.character(end_year), df$LONG_SCHOOL_YEAR), ]
+    df <- df[df$LONG_SCHOOL_YEAR == school_year, ]
   }
 
   df
@@ -206,8 +206,8 @@ download_gosa_subgroup <- function(end_year) {
 
 #' Find the correct GOSA subgroup URL for a given year
 #'
-#' GOSA files have timestamps in their names. This function attempts to
-#' construct or discover the correct URL.
+#' GOSA files have timestamps in their names. This function scrapes the
+#' directory listing to discover the correct URL.
 #'
 #' @param end_year School year end
 #' @return URL string or NULL if not found
@@ -219,65 +219,32 @@ find_gosa_subgroup_url <- function(end_year) {
 
   base_url <- paste0("https://download.gosa.ga.gov/", folder_year, "/")
 
-  # Try common filename patterns (without timestamp)
-  patterns <- c(
-    paste0("Enrollment_by_Subgroup_Metrics_", school_year, ".csv"),
-    paste0("Enrollment_by_Subgroup_", school_year, ".csv"),
-    paste0("Enrollment_by_Subgroups_Programs_", folder_year, ".csv")
-  )
+  # Scrape directory listing to find enrollment files
+  dir_response <- try(httr::GET(base_url, httr::timeout(30)), silent = TRUE)
 
-  for (pattern in patterns) {
-    test_url <- paste0(base_url, pattern)
-    response <- try(httr::HEAD(test_url, httr::timeout(10)), silent = TRUE)
-    if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
-      return(test_url)
-    }
+  if (inherits(dir_response, "try-error") || httr::http_error(dir_response)) {
+    return(NULL)
   }
 
-  # Try known URLs with timestamps (discovered from GOSA repository)
-  known_urls <- list(
-    "2024" = "https://download.gosa.ga.gov/2024/Enrollment_by_Subgroup_Metrics_2023-24.csv",
-    "2023" = "https://download.gosa.ga.gov/2023/Enrollment_by_Subgroup_Metrics_2022-23.csv",
-    "2022" = "https://download.gosa.ga.gov/2022/Enrollment_by_Subgroup_Metrics_2021-22.csv",
-    "2021" = "https://download.gosa.ga.gov/2021/Enrollment_by_Subgroup_Metrics_2020-21.csv",
-    "2020" = "https://download.gosa.ga.gov/2020/Enrollment_by_Subgroup_Metrics_2019-20.csv",
-    "2019" = "https://download.gosa.ga.gov/2019/Enrollment_by_Subgroup_Metrics_2018-19.csv",
-    "2018" = "https://download.gosa.ga.gov/2018/Enrollment_by_Subgroup_Metrics_2017-18.csv",
-    "2017" = "https://download.gosa.ga.gov/2017/Enrollment_by_Subgroup_Metrics_2016-17.csv",
-    "2016" = "https://download.gosa.ga.gov/2016/Enrollment_by_Subgroup_Metrics_2015-16.csv",
-    "2015" = "https://download.gosa.ga.gov/2015/Enrollment_by_Subgroup_Metrics_2014-15.csv",
-    "2014" = "https://download.gosa.ga.gov/2014/Enrollment_by_Subgroup_Metrics_2013-14.csv",
-    "2013" = "https://download.gosa.ga.gov/2013/Enrollment_by_Subgroup_Metrics_2012-13.csv",
-    "2012" = "https://download.gosa.ga.gov/2012/Enrollment_by_Subgroup_Metrics_2011-12.csv",
-    "2011" = "https://download.gosa.ga.gov/2011/Enrollment_by_Subgroup_Metrics_2010-11.csv"
-  )
+  dir_content <- httr::content(dir_response, as = "text", encoding = "UTF-8")
 
-  year_str <- as.character(end_year)
-  if (year_str %in% names(known_urls)) {
-    test_url <- known_urls[[year_str]]
-    response <- try(httr::HEAD(test_url, httr::timeout(10)), silent = TRUE)
-    if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
-      return(test_url)
-    }
+  # Pattern 1: Enrollment_by_Subgroup_Metrics_YYYY-YY_*.csv (2023+)
+  subgroup_pattern <- paste0("Enrollment_by_Subgroup_Metrics_", school_year, "_[^\"]+\\.csv")
+  matches <- regmatches(dir_content, gregexpr(subgroup_pattern, dir_content))[[1]]
 
-    # Try with timestamp pattern (files often have timestamps appended)
-    # Pattern: Enrollment_by_Subgroup_Metrics_YYYY-YY_YYYY-MM-DD_HH_MM_SS.csv
-    # Try to discover via directory listing or alternative URLs
+  if (length(matches) > 0) {
+    # Return the most recent file (last in sorted order by timestamp)
+    latest_file <- sort(matches, decreasing = TRUE)[1]
+    return(paste0(base_url, latest_file))
   }
 
-  # Try alternate URL structures
-  alt_patterns <- c(
-    paste0("https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/document/",
-           "Enrollment_by_Subgroup_Metrics_", school_year, ".csv"),
-    paste0("https://download.gosa.ga.gov/", folder_year, "/",
-           "Enrollment_by_Subgroups_Programs_", folder_year, "_OCT_22_2020.csv")
-  )
+  # Pattern 2: Enrollment_by_Subgroups_Programs_YYYY_*.csv (2015-2022)
+  programs_pattern <- paste0("Enrollment_by_Subgroups_Programs_", folder_year, "_[^\"]+\\.csv")
+  matches <- regmatches(dir_content, gregexpr(programs_pattern, dir_content))[[1]]
 
-  for (alt_url in alt_patterns) {
-    response <- try(httr::HEAD(alt_url, httr::timeout(10)), silent = TRUE)
-    if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
-      return(alt_url)
-    }
+  if (length(matches) > 0) {
+    latest_file <- sort(matches, decreasing = TRUE)[1]
+    return(paste0(base_url, latest_file))
   }
 
   NULL
@@ -331,8 +298,11 @@ download_gosa_grade <- function(end_year) {
 
   unlink(temp_file)
 
+  # Filter to the correct school year
   if ("SCHOOL_YEAR" %in% names(df)) {
     df <- df[df$SCHOOL_YEAR == school_year, ]
+  } else if ("LONG_SCHOOL_YEAR" %in% names(df)) {
+    df <- df[df$LONG_SCHOOL_YEAR == school_year, ]
   }
 
   df
@@ -340,6 +310,9 @@ download_gosa_grade <- function(end_year) {
 
 
 #' Find the correct GOSA grade-level URL for a given year
+#'
+#' GOSA files have timestamps in their names. This function scrapes the
+#' directory listing to discover the correct URL.
 #'
 #' @param end_year School year end
 #' @return URL string or NULL if not found
@@ -351,17 +324,23 @@ find_gosa_grade_url <- function(end_year) {
 
   base_url <- paste0("https://download.gosa.ga.gov/", folder_year, "/")
 
-  patterns <- c(
-    paste0("Enrollment_by_Grade_", school_year, ".csv"),
-    paste0("Enrollment_Grade_", school_year, ".csv")
-  )
+  # Scrape directory listing to find grade files
+  dir_response <- try(httr::GET(base_url, httr::timeout(30)), silent = TRUE)
 
-  for (pattern in patterns) {
-    test_url <- paste0(base_url, pattern)
-    response <- try(httr::HEAD(test_url, httr::timeout(10)), silent = TRUE)
-    if (!inherits(response, "try-error") && httr::status_code(response) == 200) {
-      return(test_url)
-    }
+  if (inherits(dir_response, "try-error") || httr::http_error(dir_response)) {
+    return(NULL)
+  }
+
+  dir_content <- httr::content(dir_response, as = "text", encoding = "UTF-8")
+
+  # Pattern: Enrollment_by_Grade_YYYY-YY_*.csv
+  grade_pattern <- paste0("Enrollment_by_Grade_", school_year, "_[^\"]+\\.csv")
+  matches <- regmatches(dir_content, gregexpr(grade_pattern, dir_content))[[1]]
+
+  if (length(matches) > 0) {
+    # Return the most recent file (last in sorted order by timestamp)
+    latest_file <- sort(matches, decreasing = TRUE)[1]
+    return(paste0(base_url, latest_file))
   }
 
   NULL
@@ -370,29 +349,53 @@ find_gosa_grade_url <- function(end_year) {
 
 #' Merge GOSA subgroup and grade data
 #'
-#' Combines the subgroup demographics with grade-level enrollment.
+#' The grade data has multiple rows per entity (one per grade level),
+#' while subgroup data has one row per entity. Merging would cause
+#' row explosion. For now, we pivot grade data to wide format to
+#' add grade-level enrollment columns to the subgroup data.
 #'
 #' @param subgroup_df Subgroup enrollment data
 #' @param grade_df Grade-level enrollment data
-#' @return Merged data frame
+#' @return Merged data frame with grade-level enrollment counts
 #' @keywords internal
 merge_gosa_data <- function(subgroup_df, grade_df) {
 
-  id_cols <- c("SCHOOL_DSTRCT_CD", "INSTN_NUMBER", "SCHOOL_YEAR")
-  id_cols <- id_cols[id_cols %in% names(subgroup_df) & id_cols %in% names(grade_df)]
-
-  if (length(id_cols) == 0) {
+  # Check for required columns in grade data
+  if (!all(c("SCHOOL_DSTRCT_CD", "INSTN_NUMBER", "GRADE_LEVEL", "ENROLLMENT_COUNT") %in% names(grade_df))) {
     return(subgroup_df)
   }
 
-  grade_cols <- grep("^GRADE_|^GR_|_GRADE$", names(grade_df), value = TRUE)
+  # Get Fall enrollment period (Fall snapshot, not Spring)
+  if ("ENROLLMENT_PERIOD" %in% names(grade_df)) {
+    grade_df <- grade_df[grepl("Fall", grade_df$ENROLLMENT_PERIOD, ignore.case = TRUE), ]
+  }
 
-  if (length(grade_cols) == 0) {
+  # Pivot grade data to wide format (one row per entity)
+  grade_wide <- tryCatch({
+    # Suppress warnings from "TFS" (too few students) values
+    grade_df$ENROLLMENT_COUNT <- suppressWarnings(as.numeric(grade_df$ENROLLMENT_COUNT))
+    grade_df$GRADE_LEVEL <- paste0("GRADE_", gsub("[^A-Za-z0-9]", "_", grade_df$GRADE_LEVEL))
+
+    tidyr::pivot_wider(
+      grade_df[, c("SCHOOL_DSTRCT_CD", "INSTN_NUMBER", "GRADE_LEVEL", "ENROLLMENT_COUNT")],
+      names_from = "GRADE_LEVEL",
+      values_from = "ENROLLMENT_COUNT",
+      values_fn = sum
+    )
+  }, error = function(e) {
+    return(NULL)
+  })
+
+  if (is.null(grade_wide) || nrow(grade_wide) == 0) {
     return(subgroup_df)
   }
 
-  grade_subset <- grade_df[, c(id_cols, grade_cols), drop = FALSE]
-  merged <- dplyr::left_join(subgroup_df, grade_subset, by = id_cols)
+  # Merge on district and institution codes
+  merged <- dplyr::left_join(
+    subgroup_df,
+    grade_wide,
+    by = c("SCHOOL_DSTRCT_CD", "INSTN_NUMBER")
+  )
 
   merged
 }
