@@ -12,9 +12,12 @@ merge_gosa_data(subgroup_df, grade_df)
 \item{grade_df}{Grade-level enrollment data}
 }
 \value{
-Merged data frame
+Merged data frame with grade-level enrollment counts
 }
 \description{
-Combines the subgroup demographics with grade-level enrollment.
+The grade data has multiple rows per entity (one per grade level),
+while subgroup data has one row per entity. Merging would cause
+row explosion. For now, we pivot grade data to wide format to
+add grade-level enrollment columns to the subgroup data.
 }
 \keyword{internal}
