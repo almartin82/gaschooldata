@@ -29,7 +29,7 @@
 #' Downloads enrollment data from the Governor's Office of Student Achievement
 #' (GOSA) downloadable data repository.
 #'
-#' @param end_year School year end (2023-24 = 2024). Valid range: 2011-2024
+#' @param end_year School year end (e.g., 2023-24 = 2024). Valid range: 2011-2024
 #' @return List with enrollment data frame(s)
 #' @keywords internal
 get_raw_enr <- function(end_year) {
@@ -48,14 +48,14 @@ get_raw_enr <- function(end_year) {
 #' Validate year parameter
 #'
 #' Checks that the year is within the valid range for available data.
-#' GOSA provides data from 2010-11 through 2024-25 school years.
+#' GOSA provides data from 2010-11 through 2023-24 school years.
 #'
 #' @param end_year School year end
 #' @return NULL (throws error if invalid)
 #' @keywords internal
 validate_year <- function(end_year) {
   min_year <- 2011
-  max_year <- 2025
+  max_year <- 2024
 
   if (!is.numeric(end_year) || length(end_year) != 1) {
     stop("end_year must be a single numeric value")
@@ -64,7 +64,7 @@ validate_year <- function(end_year) {
   if (end_year < min_year || end_year > max_year) {
     stop(paste0(
       "end_year must be between ", min_year, " and ", max_year, ".\n",
-      "  - GOSA provides enrollment data from 2010-11 through 2024-25.\n",
+      "  - GOSA provides enrollment data from 2010-11 through 2023-24.\n",
       "  - For historical data prior to 2011, submit a GOSA data request:\n",
       "    https://gosa.georgia.gov/dashboards-data-report-card/data-requests"
     ))
@@ -89,23 +89,23 @@ get_format_era <- function(end_year) {
 #'
 #' Returns the range of years available from GOSA (Governor's Office of
 #' Student Achievement). GOSA provides enrollment data from the 2010-11
-#' school year (end_year = 2011) through 2024-25 (end_year = 2025).
+#' school year (end_year = 2011) through 2023-24 (end_year = 2024).
 #'
 #' @return A list with components:
 #'   \describe{
 #'     \item{min_year}{Integer. The earliest available year (2011).}
-#'     \item{max_year}{Integer. The most recent available year (2025).}
+#'     \item{max_year}{Integer. The most recent available year (2024).}
 #'     \item{description}{Character. A description of the data availability.}
 #'   }
 #' @export
 #' @examples
 #' get_available_years()
-#' # Returns list(min_year = 2011, max_year = 2025, description = "...")
+#' # Returns list(min_year = 2011, max_year = 2024, description = "...")
 get_available_years <- function() {
   list(
     min_year = 2011L,
-    max_year = 2025L,
-    description = "GOSA enrollment data (2010-11 through 2024-25 school years)"
+    max_year = 2024L,
+    description = "GOSA enrollment data (2010-11 through 2023-24 school years)"
   )
 }
 
@@ -236,7 +236,6 @@ find_gosa_subgroup_url <- function(end_year) {
 
   # Try known URLs with timestamps (discovered from GOSA repository)
   known_urls <- list(
-    "2025" = "https://download.gosa.ga.gov/2025/Enrollment_by_Subgroup_Metrics_2024-25.csv",
     "2024" = "https://download.gosa.ga.gov/2024/Enrollment_by_Subgroup_Metrics_2023-24.csv",
     "2023" = "https://download.gosa.ga.gov/2023/Enrollment_by_Subgroup_Metrics_2022-23.csv",
     "2022" = "https://download.gosa.ga.gov/2022/Enrollment_by_Subgroup_Metrics_2021-22.csv",
