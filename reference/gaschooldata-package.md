@@ -30,18 +30,6 @@ request directly to GOSA:
 
   Get range of available years (2011-2024)
 
-- `tidy_enr`:
-
-  Transform wide data to tidy (long) format
-
-- `id_enr_aggs`:
-
-  Add aggregation level flags
-
-- `enr_grade_aggs`:
-
-  Create grade-level aggregations
-
 ## Cache functions
 
 - [`cache_status`](https://almartin82.github.io/gaschooldata/reference/cache_status.md):

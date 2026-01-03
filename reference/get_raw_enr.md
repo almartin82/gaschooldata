@@ -13,7 +13,7 @@ get_raw_enr(end_year)
 
 - end_year:
 
-  School year end (2023-24 = 2024). Valid range: 2011-2024
+  School year end (e.g., 2023-24 = 2024). Valid range: 2011-2024
 
 ## Value
 
