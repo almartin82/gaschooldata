@@ -32,6 +32,12 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/enrollment-trends.html">Georgia Enrollment Data</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -50,155 +56,32 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><strong><a href="https://almartin82.github.io/gaschooldata/">Documentation</a></strong> | <strong><a href="https://almartin82.github.io/gaschooldata/articles/quickstart.html">Getting Started</a></strong></p>
+<p><strong><a href="https://almartin82.github.io/gaschooldata/">Documentation</a></strong> | <strong><a href="https://almartin82.github.io/gaschooldata/articles/quickstart.html">Getting Started</a></strong> | <strong><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html">Enrollment Trends</a></strong></p>
 <p>Fetch and analyze Georgia school enrollment data from the Governor’s Office of Student Achievement (GOSA) in R or Python.</p>
 <div class="section level2">
 <h2 id="what-can-you-find-with-gaschooldata">What can you find with gaschooldata?<a class="anchor" aria-label="anchor" href="#what-can-you-find-with-gaschooldata"></a>
 </h2>
-<p><strong>14 years of enrollment data (2011-2024).</strong> 1.7 million students today. Over 180 districts. Here are ten stories hiding in the numbers:</p>
+<p><strong>14 years of enrollment data (2011-2024).</strong> 1.7 million students today. Over 180 districts. Here are ten stories hiding in the numbers - see the <a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html">Enrollment Trends</a> vignette for interactive visualizations:</p>
+<ol style="list-style-type: decimal">
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#georgia-keeps-growing-while-other-states-shrink">Georgia keeps growing while other states shrink</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#the-hispanic-population-surge">The Hispanic population surge</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#covid-hit-kindergarten-hardest">COVID hit kindergarten hardest</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#georgias-demographics-transformation">Georgia’s demographics transformation</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#suburban-atlanta-growth">Suburban Atlanta growth</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#gwinnett-county-is-georgias-school-system-giant">Gwinnett County is Georgia’s school system giant</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#atlanta-public-schools-is-shrinking">Atlanta Public Schools is shrinking</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#rural-georgia-is-emptying-out">Rural Georgia is emptying out</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#english-learners-exceed-100000">English Learners exceed 100,000</a></li>
+<li><a href="https://almartin82.github.io/gaschooldata/articles/enrollment-trends.html#charter-school-growth-accelerates">Charter school growth accelerates</a></li>
+</ol>
 <hr>
-<div class="section level3">
-<h3 id="id_1-georgia-keeps-growing-while-other-states-shrink">1. Georgia keeps growing while other states shrink<a class="anchor" aria-label="anchor" href="#id_1-georgia-keeps-growing-while-other-states-shrink"></a>
-</h3>
-<p>Unlike many states losing students, Georgia added 50,000+ students over the past decade. Metro Atlanta’s population boom is real.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/gaschooldata/">gaschooldata</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fl">2015</span><span class="op">:</span><span class="fl">2024</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="reference/figures/enrollment-growth.png" alt="Georgia enrollment growth"><div class="figcaption">Georgia enrollment growth</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_2-gwinnett-county-is-georgias-school-system-giant">2. Gwinnett County is Georgia’s school system giant<a class="anchor" aria-label="anchor" href="#id_2-gwinnett-county-is-georgias-school-system-giant"></a>
-</h3>
-<p>Gwinnett County Public Schools serves more than 180,000 students, making it the largest district in Georgia and one of the largest in the nation.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_2024</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr.html">fetch_enr</a></span><span class="op">(</span><span class="fl">2024</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">enr_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_district</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">n_students</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span></span></code></pre></div>
-<p>Gwinnett, Cobb, Fulton, DeKalb, and Clayton County form the metro Atlanta powerhouse, serving over 600,000 students combined.</p>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_3-the-hispanic-population-surge">3. The Hispanic population surge<a class="anchor" aria-label="anchor" href="#id_3-the-hispanic-population-surge"></a>
-</h3>
-<p>Georgia’s Hispanic student population has more than doubled since 2011. One in five Georgia students is now Hispanic.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"hispanic"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">pct</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="reference/figures/hispanic-growth.png" alt="Hispanic enrollment growth"><div class="figcaption">Hispanic enrollment growth</div>
-</div>
-<p>From 12% to 20% in just over a decade.</p>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_4-covid-hit-kindergarten-hardest">4. COVID hit kindergarten hardest<a class="anchor" aria-label="anchor" href="#id_4-covid-hit-kindergarten-hardest"></a>
-</h3>
-<p>Georgia lost 15,000 kindergartners between 2020 and 2021. Those students never fully came back.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"K"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">end_year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fl">2019</span><span class="op">:</span><span class="fl">2024</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="reference/figures/k-covid.png" alt="Kindergarten COVID impact"><div class="figcaption">Kindergarten COVID impact</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_5-atlanta-public-schools-is-shrinking">5. Atlanta Public Schools is shrinking<a class="anchor" aria-label="anchor" href="#id_5-atlanta-public-schools-is-shrinking"></a>
-</h3>
-<p>While suburban Atlanta booms, Atlanta Public Schools has lost 20% of its enrollment since 2015. Gentrification is reshaping the city’s schools.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Atlanta City|Atlanta Public"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>         <span class="va">is_district</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">district_name</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_6-white-students-are-now-a-minority">6. White students are now a minority<a class="anchor" aria-label="anchor" href="#id_6-white-students-are-now-a-minority"></a>
-</h3>
-<p>In 2011, white students were 44% of enrollment. Today they’re under 35%. Georgia schools reflect the New South.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"black"</span>, <span class="st">"hispanic"</span>, <span class="st">"asian"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">subgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>pct <span class="op">=</span> <span class="va">n</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="reference/figures/demographics.png" alt="Demographic transformation"><div class="figcaption">Demographic transformation</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_7-rural-georgia-is-emptying-out">7. Rural Georgia is emptying out<a class="anchor" aria-label="anchor" href="#id_7-rural-georgia-is-emptying-out"></a>
-</h3>
-<p>While Gwinnett County gains 2,000 students per year, rural districts like Taliaferro County have fewer than 300 students total. Some schools have single-digit graduating classes.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_district</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">n_students</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_8-charter-school-growth-accelerates">8. Charter school growth accelerates<a class="anchor" aria-label="anchor" href="#id_8-charter-school-growth-accelerates"></a>
-</h3>
-<p>State charter schools and district-authorized charters now serve over 100,000 Georgia students, up from 30,000 a decade ago.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Charter"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>         <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>total_charter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_9-english-learners-exceed-100000">9. English Learners exceed 100,000<a class="anchor" aria-label="anchor" href="#id_9-english-learners-exceed-100000"></a>
-</h3>
-<p>Georgia’s English Learner population has grown by 50% since 2015, driven by immigration to metro Atlanta.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"lep"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">pct</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_10-the-suburban-shift-continues">10. The suburban shift continues<a class="anchor" aria-label="anchor" href="#id_10-the-suburban-shift-continues"></a>
-</h3>
-<p>Forsyth, Cherokee, and Henry counties are Georgia’s fastest-growing districts. All are suburban Atlanta counties that barely existed on the education map 30 years ago.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">district_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Forsyth County"</span>, <span class="st">"Cherokee County"</span>, <span class="st">"Henry County"</span><span class="op">)</span>,</span>
-<span>         <span class="va">is_district</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total_enrollment"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">district_name</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="reference/figures/suburban-growth.png" alt="Suburban growth"><div class="figcaption">Suburban growth</div>
-</div>
-<hr>
-</div>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"almartin82/gaschooldata"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"almartin82/gaschooldata"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
@@ -206,7 +89,7 @@
 <div class="section level3">
 <h3 id="r">R<a class="anchor" aria-label="anchor" href="#r"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/gaschooldata/">gaschooldata</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -235,31 +118,31 @@
 <div class="section level3">
 <h3 id="python">Python<a class="anchor" aria-label="anchor" href="#python"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="im">import</span> pygaschooldata <span class="im">as</span> ga</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co"># See available years</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>years <span class="op">=</span> ga.get_available_years()</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Data available from </span><span class="sc">{</span>years[<span class="st">'min_year'</span>]<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>years[<span class="st">'max_year'</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co"># Fetch one year</span></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>enr_2024 <span class="op">=</span> ga.fetch_enr(<span class="dv">2024</span>)</span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a></span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co"># Fetch multiple years</span></span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>enr_multi <span class="op">=</span> ga.fetch_enr_multi([<span class="dv">2020</span>, <span class="dv">2021</span>, <span class="dv">2022</span>, <span class="dv">2023</span>, <span class="dv">2024</span>])</span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a></span>
-<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="co"># State totals</span></span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>state_total <span class="op">=</span> enr_2024[</span>
-<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>    (enr_2024[<span class="st">'is_state'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
-<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>    (enr_2024[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total_enrollment'</span>) <span class="op">&amp;</span></span>
-<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>    (enr_2024[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>)</span>
-<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>]</span>
-<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a></span>
-<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="co"># District breakdown</span></span>
-<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>districts <span class="op">=</span> enr_2024[</span>
-<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>    (enr_2024[<span class="st">'is_district'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
-<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>    (enr_2024[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total_enrollment'</span>) <span class="op">&amp;</span></span>
-<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>    (enr_2024[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>)</span>
-<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>].sort_values(<span class="st">'n_students'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="im">import</span> pygaschooldata <span class="im">as</span> ga</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># See available years</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>years <span class="op">=</span> ga.get_available_years()</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Data available from </span><span class="sc">{</span>years[<span class="st">'min_year'</span>]<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>years[<span class="st">'max_year'</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># Fetch one year</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>enr_2024 <span class="op">=</span> ga.fetch_enr(<span class="dv">2024</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co"># Fetch multiple years</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>enr_multi <span class="op">=</span> ga.fetch_enr_multi([<span class="dv">2020</span>, <span class="dv">2021</span>, <span class="dv">2022</span>, <span class="dv">2023</span>, <span class="dv">2024</span>])</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co"># State totals</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>state_total <span class="op">=</span> enr_2024[</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>    (enr_2024[<span class="st">'is_state'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>    (enr_2024[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total_enrollment'</span>) <span class="op">&amp;</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>    (enr_2024[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>]</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co"># District breakdown</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>districts <span class="op">=</span> enr_2024[</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>    (enr_2024[<span class="st">'is_district'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>    (enr_2024[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total_enrollment'</span>) <span class="op">&amp;</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>    (enr_2024[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>].sort_values(<span class="st">'n_students'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

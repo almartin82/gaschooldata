@@ -1,7 +1,7 @@
 # Find the correct GOSA subgroup URL for a given year
 
-GOSA files have timestamps in their names. This function attempts to
-construct or discover the correct URL.
+GOSA files have timestamps in their names. This function scrapes the
+directory listing to discover the correct URL.
 
 ## Usage
 
