@@ -2,7 +2,7 @@
 
 Returns the range of years available from GOSA (Governor's Office of
 Student Achievement). GOSA provides enrollment data from the 2010-11
-school year (end_year = 2011) through 2024-25 (end_year = 2025).
+school year (end_year = 2011) through 2023-24 (end_year = 2024).
 
 ## Usage
 
@@ -20,7 +20,7 @@ A list with components:
 
 - max_year:
 
-  Integer. The most recent available year (2025).
+  Integer. The most recent available year (2024).
 
 - description:
 
@@ -34,10 +34,10 @@ get_available_years()
 #> [1] 2011
 #> 
 #> $max_year
-#> [1] 2025
+#> [1] 2024
 #> 
 #> $description
-#> [1] "GOSA enrollment data (2010-11 through 2024-25 school years)"
+#> [1] "GOSA enrollment data (2010-11 through 2023-24 school years)"
 #> 
-# Returns list(min_year = 2011, max_year = 2025, description = "...")
+# Returns list(min_year = 2011, max_year = 2024, description = "...")
 ```
