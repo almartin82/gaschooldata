@@ -30,10 +30,6 @@ enr %>%
   select(end_year, n_students)
 ```
 
-![Georgia enrollment growth](reference/figures/enrollment-growth.png)
-
-Georgia enrollment growth
-
 ------------------------------------------------------------------------
 
 ### 2. Gwinnett County is Georgia’s school system giant
@@ -67,10 +63,6 @@ enr %>%
   select(end_year, n_students, pct)
 ```
 
-![Hispanic enrollment growth](reference/figures/hispanic-growth.png)
-
-Hispanic enrollment growth
-
 From 12% to 20% in just over a decade.
 
 ------------------------------------------------------------------------
@@ -86,10 +78,6 @@ enr %>%
   filter(end_year %in% 2019:2024) %>%
   select(end_year, n_students)
 ```
-
-![Kindergarten COVID impact](reference/figures/k-covid.png)
-
-Kindergarten COVID impact
 
 ------------------------------------------------------------------------
 
@@ -120,10 +108,6 @@ enr %>%
   group_by(end_year) %>%
   mutate(pct = n / sum(n) * 100)
 ```
-
-![Demographic transformation](reference/figures/demographics.png)
-
-Demographic transformation
 
 ------------------------------------------------------------------------
 
@@ -182,10 +166,6 @@ enr %>%
          is_district, grade_level == "TOTAL", subgroup == "total_enrollment") %>%
   select(end_year, district_name, n_students)
 ```
-
-![Suburban growth](reference/figures/suburban-growth.png)
-
-Suburban growth
 
 ------------------------------------------------------------------------
 
