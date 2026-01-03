@@ -13,6 +13,7 @@ find_gosa_grade_url(end_year)
 URL string or NULL if not found
 }
 \description{
-Find the correct GOSA grade-level URL for a given year
+GOSA files have timestamps in their names. This function scrapes the
+directory listing to discover the correct URL.
 }
 \keyword{internal}

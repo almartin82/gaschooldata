@@ -13,7 +13,7 @@ find_gosa_subgroup_url(end_year)
 URL string or NULL if not found
 }
 \description{
-GOSA files have timestamps in their names. This function attempts to
-construct or discover the correct URL.
+GOSA files have timestamps in their names. This function scrapes the
+directory listing to discover the correct URL.
 }
 \keyword{internal}
