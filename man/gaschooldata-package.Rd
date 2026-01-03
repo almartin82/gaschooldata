@@ -28,9 +28,6 @@ to GOSA: \url{https://gosa.georgia.gov/dashboards-data-report-card/data-requests
 \item{\code{\link{fetch_enr}}}{Fetch enrollment data for a school year}
 \item{\code{\link{fetch_enr_multi}}}{Fetch enrollment data for multiple years}
 \item{\code{\link{get_available_years}}}{Get range of available years (2011-2024)}
-\item{\code{\link{tidy_enr}}}{Transform wide data to tidy (long) format}
-\item{\code{\link{id_enr_aggs}}}{Add aggregation level flags}
-\item{\code{\link{enr_grade_aggs}}}{Create grade-level aggregations}
 }
 }
 
