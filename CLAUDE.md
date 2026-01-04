@@ -142,7 +142,6 @@ If URLs start failing:
 3. Update `find_gosa_subgroup_url()` patterns if naming changed
 4. File issues may indicate GOSA restructured their data repository
 
-
 ---
 
 ## Git Workflow (REQUIRED)
@@ -188,4 +187,3 @@ PRs auto-merge when ALL CI checks pass:
 - pkgdown build (vignettes must render)
 
 If CI fails, fix the issue and push - auto-merge triggers when checks pass.
-
